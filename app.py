@@ -5,15 +5,24 @@ from flask_mysqldb import MySQL
 
 
 app = Flask(__name__)
+
+# Mysql connection
 app.config["MYSQL_HOST"] = "localhost"
 app.config["MYSQL_USER"] = "root"
 app.config["MYSQL_PASSWORD"] = "chofo3mily"
 app.config["MYSQL_DB"] = "flaskcontacts"
 mysql = MySQL(app)
 
+# Settings
+app.secret_key = "mysecretkey"
+
 @app.route("/")
 def Index():
-    return render_template("index.html")
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT * FROM contacts")
+    data = cur.fetchall()
+    print(data)
+    return render_template("index.html", contacts = data)
 
 
 @app.route("/add_task", methods = ["POST"])
