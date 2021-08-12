@@ -1,4 +1,6 @@
-from flask import Flask
+from flask import Flask, render_template, request, url_for, flash
+from flask.globals import request
+from werkzeug.utils import redirect
 from flask_mysqldb import MySQL
 
 
@@ -11,12 +13,21 @@ mysql = MySQL(app)
 
 @app.route("/")
 def Index():
-    return "Hello Madafaka"
+    return render_template("index.html")
 
 
-@app.route("/add_contact")
-def add_contact():
-    return "Agregar contacto"
+@app.route("/add_task", methods = ["POST"])
+def add_contact(): 
+    if request.method == "POST":
+        title = request.form["title"]
+        description = request.form["description"]
+        date = request.form["date"]
+        cur = mysql.connection.cursor()
+        cur.execute("INSERT INTO contacts (title, description, date) VALUES (%s, %s, %s)", (title, description, date))
+        mysql.connection.commit()
+        flash("Task added successfully")
+
+        return redirect(url_for("Index"))
 
 
 @app.route("/edit")
