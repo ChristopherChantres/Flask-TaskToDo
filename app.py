@@ -39,14 +39,41 @@ def add_contact():
         return redirect(url_for("Index"))
 
 
-@app.route("/edit")
-def edit_contact():
-    return "Editar contacto"
+@app.route("/edit/<id>")
+def get_contact(id):
+    cur = mysql.connection.cursor()
+    cur.execute("SELECT * FROM contacts WHERE id = %s", (id))
+    data = cur.fetchall()
+    return render_template("edit_contact.html", contact = data[0])
 
 
-@app.route("/delete")
-def delete_contact():
-    return "Eliminar contacto"
+@app.route("/update/<id>", methods = ["POST"])
+def update_contact(id):
+    if request.method == "POST":
+        title = request.form["title"]
+        description = request.form["description"]
+        date = request.form["date"]
+        cur = mysql.connection.cursor()
+        cur.execute("""
+        UPDATE contacts
+        SET title = %s,
+            description = %s,
+            date = %s
+        WHERE id = %s
+        """, (title, description, date, id))
+        mysql.connection.commit()
+        flash("Contact update successfully")
+        return redirect(url_for("Index"))
+
+
+
+@app.route("/delete/<string:id>")
+def delete_contact(id):
+    cur = mysql.connection.cursor()
+    cur.execute("DELETE FROM contacts WHERE id = {0}".format(id))
+    mysql.connection.commit()
+    flash("Task removed successfully")
+    return redirect(url_for("Index"))
 
 
 if __name__ == "__main__":
